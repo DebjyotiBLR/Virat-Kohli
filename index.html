@@ -1,276 +1,469 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Our Crew</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0f14">
+  <meta name="description" content="ABDevillors — Group collaboration hub">
+  <title>ABDevillors</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Firebase v9 compat (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
-     NAV
-══════════════════════════════════════════════════════ -->
-<nav>
-  <a class="nav-logo" href="#" onclick="navigateTo('home'); return false;">
-    ✦ <span id="group-name">Our Crew</span>
-  </a>
-  <ul class="nav-links"></ul>
-  <div class="nav-user">
-    <select id="user-select" class="input" style="width:auto;border-radius:999px;padding:6px 14px;font-size:0.82rem;"></select>
-  </div>
-</nav>
+<!-- ═══════════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-bg"></div>
+  <div class="auth-card">
 
-<!-- ══════════════════════════════════════════════════════
-     HOME
-══════════════════════════════════════════════════════ -->
-<div id="page-home" class="page">
-  <div class="hero">
-    <span class="hero-eyebrow">✦ Welcome</span>
-    <h1 id="hero-title">Our space to <em>create</em>, share &amp; connect.</h1>
-    <p class="hero-sub" id="hero-sub">Ideas, links, and conversations — all in one place.</p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="num" id="stat-chat">—</div>
-        <div class="label">messages</div>
-      </div>
-      <div class="hero-stat">
-        <div class="num" id="stat-ideas">—</div>
-        <div class="label">ideas</div>
-      </div>
-      <div class="hero-stat">
-        <div class="num" id="stat-links">—</div>
-        <div class="label">links shared</div>
-      </div>
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🔬</div>
+      <h1>ABDevillors</h1>
+      <p>Lab collaboration hub</p>
     </div>
-  </div>
 
-  <div class="container">
-    <div class="home-grid">
-      <div>
-        <div class="section-head">
-          <h2>📣 Latest announcements</h2>
-          <a class="see-all" onclick="navigateTo('announcements')">See all →</a>
+    <div class="auth-tabs" role="tablist">
+      <button class="auth-tab active" data-tab="login" role="tab"
+        onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" data-tab="register" role="tab"
+        onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="auth-form active" id="form-login">
+      <div class="auth-error" id="login-error" role="alert"></div>
+      <div class="field">
+        <label for="login-name">Username</label>
+        <input id="login-name" class="field-input" type="text"
+          placeholder="Your display name" autocomplete="username" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="login-dob">Date of Birth</label>
+        <input id="login-dob" class="field-input" type="date"
+          autocomplete="bday">
+      </div>
+      <button class="btn-auth" onclick="doLogin()">Sign In →</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-form" id="form-register">
+      <div class="auth-error" id="reg-error" role="alert"></div>
+      <div class="auth-hint">
+        🔑 You need the secret keyword from a lab member to register.
+      </div>
+      <div class="field">
+        <label for="reg-name">Display Name</label>
+        <input id="reg-name" class="field-input" type="text"
+          placeholder="What should we call you?" maxlength="24" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="reg-dob">Date of Birth</label>
+        <input id="reg-dob" class="field-input" type="date" autocomplete="bday">
+      </div>
+      <div class="field">
+        <label for="reg-keyword">Secret Keyword</label>
+        <input id="reg-keyword" class="field-input" type="password"
+          placeholder="Ask your lab admin">
+      </div>
+      <button class="btn-auth" onclick="doRegister()">Create Account →</button>
+    </div>
+
+  </div>
+</div><!-- /auth-screen -->
+
+
+<!-- ═══════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- ── TOP NAV ───────────────────────────────── -->
+  <nav class="topnav" role="navigation">
+    <!-- Hamburger (mobile) -->
+    <button class="hamburger" onclick="openNav()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="topnav-logo">ABDevillors</div>
+
+    <!-- Desktop nav links -->
+    <ul class="topnav-links" id="nav-links-desktop" role="list"></ul>
+
+    <div class="topnav-right">
+      <div class="nav-user-chip" id="nav-user-chip" onclick="navigateTo('members')"></div>
+      <button class="btn-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </nav>
+
+  <!-- ── MOBILE DRAWER ──────────────────────────── -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="closeNav()"></div>
+  <aside id="drawer" class="drawer" role="navigation" aria-label="Main menu">
+    <div class="drawer-header">
+      <span class="drawer-title">ABDevillors</span>
+      <button class="drawer-close" onclick="closeNav()" aria-label="Close menu">✕</button>
+    </div>
+    <div class="drawer-user" id="drawer-user-info"></div>
+    <nav class="drawer-nav" id="drawer-nav-items" role="list"></nav>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost btn-full" onclick="doLogout()" style="font-size:0.85rem">
+        🚪 Log out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ── HOME PAGE ─────────────────────────────── -->
+    <div class="page active" id="page-home">
+      <div class="page-inner">
+
+        <div class="hero">
+          <div class="hero-name">Welcome back</div>
+          <h1 class="hero-welcome">Hey, <span id="hero-username">there</span>! 👋</h1>
+          <p class="hero-sub">What's happening in the lab today?</p>
+          <div class="stats-row">
+            <div class="stat-pill">
+              <div class="stat-num" id="stat-chat">–</div>
+              <div class="stat-label">Messages</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-num" id="stat-ideas">–</div>
+              <div class="stat-label">Ideas</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-num" id="stat-links">–</div>
+              <div class="stat-label">Links</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title">📣 Latest Announcements</span>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('announcements')">See all →</button>
         </div>
         <div id="home-announcements"></div>
+
+        <div class="section-header mt-3">
+          <span class="section-title">⚡ Recent Activity</span>
+        </div>
+        <div id="activity-feed"></div>
+
       </div>
-      <div>
-        <div class="section-head"><h2>⚡ Activity</h2></div>
-        <div class="card" style="padding:0.75rem 1rem">
-          <div id="activity-feed"><p class="text-muted text-sm">Loading...</p></div>
+    </div><!-- /home -->
+
+
+    <!-- ── ANNOUNCEMENTS PAGE ─────────────────────── -->
+    <div class="page" id="page-announcements">
+      <div class="page-inner">
+        <div class="page-header">
+          <h2 class="page-title">📣 Announcements</h2>
+          <p class="page-sub">Important updates from the lab.</p>
+        </div>
+        <div id="announcements-list"></div>
+      </div>
+      <!-- FAB (admin only) — shown via JS -->
+      <button class="fab" id="ann-fab" onclick="openModal('modal-ann')" style="display:none" title="Post announcement">＋</button>
+    </div><!-- /announcements -->
+
+
+    <!-- ── CHAT PAGE ──────────────────────────────── -->
+    <div class="page" id="page-chat">
+      <div class="chat-wrap">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-bar">
+          <div class="chat-input-wrap">
+            <input id="chat-input" type="text" placeholder="Message the lab…" maxlength="500" autocomplete="off">
+          </div>
+          <button class="btn-send" onclick="sendMessage()" title="Send">➤</button>
         </div>
       </div>
-    </div>
-  </div>
-</div>
+    </div><!-- /chat -->
 
-<!-- ══════════════════════════════════════════════════════
-     ANNOUNCEMENTS
-══════════════════════════════════════════════════════ -->
-<div id="page-announcements" class="page">
-  <div class="container">
-    <div class="section-head" style="margin-top:1rem">
-      <h2>📣 Announcements</h2>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-ann')">+ Post</button>
-    </div>
-    <div id="announcements-list"></div>
-  </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════
-     CHAT
-══════════════════════════════════════════════════════ -->
-<div id="page-chat" class="page">
-  <div class="chat-layout">
-    <div class="chat-messages" id="chat-messages">
-      <div class="empty">
-        <div class="empty-icon">💬</div>
-        <p>Loading messages...</p>
+    <!-- ── IDEAS PAGE ─────────────────────────────── -->
+    <div class="page" id="page-ideas">
+      <div class="page-inner">
+        <div class="page-header">
+          <h2 class="page-title">💡 Ideas</h2>
+          <p class="page-sub">Post and vote on group ideas.</p>
+        </div>
+        <div class="filter-bar" id="idea-filters">
+          <button class="filter-chip idea-filter-btn active" onclick="setIdeaFilter('all',this)">All</button>
+          <button class="filter-chip idea-filter-btn" onclick="setIdeaFilter('feature',this)">Feature</button>
+          <button class="filter-chip idea-filter-btn" onclick="setIdeaFilter('research',this)">Research</button>
+          <button class="filter-chip idea-filter-btn" onclick="setIdeaFilter('design',this)">Design</button>
+          <button class="filter-chip idea-filter-btn" onclick="setIdeaFilter('bug',this)">Bug</button>
+          <button class="filter-chip idea-filter-btn" onclick="setIdeaFilter('other',this)">Other</button>
+        </div>
+        <div id="ideas-list"></div>
       </div>
-    </div>
-    <div class="chat-input-row">
-      <input class="input" id="chat-input" placeholder="Type a message… (Enter to send)" autocomplete="off" />
-      <button class="btn btn-primary" onclick="sendMessage()">Send ↑</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     IDEAS
-══════════════════════════════════════════════════════ -->
-<div id="page-ideas" class="page">
-  <div class="container">
-    <div class="section-head" style="margin-top:1rem">
-      <h2>💡 Idea Board</h2>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-idea')">+ Add Idea</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
-      <select class="input" id="idea-filter" style="width:auto;border-radius:999px;font-size:0.82rem" onchange="loadIdeas()">
-        <option value="all">All tags</option>
-        <option value="feature">✨ Feature</option>
-        <option value="design">🎨 Design</option>
-        <option value="research">🔬 Research</option>
-        <option value="bug">🐛 Bug</option>
-        <option value="general">💬 General</option>
-        <option value="other">📦 Other</option>
-      </select>
-    </div>
-    <div id="ideas-list"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     LINKS
-══════════════════════════════════════════════════════ -->
-<div id="page-links" class="page">
-  <div class="container">
-    <div class="section-head" style="margin-top:1rem">
-      <h2>🔗 Links Library</h2>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-link')">+ Share Link</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
-      <select class="input" id="link-cat-filter" style="width:auto;border-radius:999px;font-size:0.82rem" onchange="loadLinks()">
-        <option value="all">All categories</option>
-        <option value="article">📰 Article</option>
-        <option value="tool">🛠️ Tool</option>
-        <option value="video">🎥 Video</option>
-        <option value="repo">💻 Repo</option>
-        <option value="design">🎨 Design</option>
-        <option value="other">📦 Other</option>
-      </select>
-    </div>
-    <div id="links-list"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     MEMBERS
-══════════════════════════════════════════════════════ -->
-<div id="page-members" class="page">
-  <div class="container">
-    <div class="section-head" style="margin-top:1rem">
-      <h2>👥 Members</h2>
-      <span class="tag" id="member-count"></span>
-    </div>
-    <div id="members-list"></div>
-  </div>
-</div>
+      <button class="fab" onclick="openModal('modal-idea')" title="Post an idea">＋</button>
+    </div><!-- /ideas -->
 
 
-<!-- ══════════════════════════════════════════════════════
+    <!-- ── LINKS PAGE ─────────────────────────────── -->
+    <div class="page" id="page-links">
+      <div class="page-inner">
+        <div class="page-header">
+          <h2 class="page-title">🔗 Links</h2>
+          <p class="page-sub">Curated resources for the lab.</p>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-chip link-filter-btn active" onclick="setLinkFilter('all',this)">All</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('article',this)">Article</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('tool',this)">Tool</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('video',this)">Video</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('repo',this)">Repo</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('paper',this)">Paper</button>
+          <button class="filter-chip link-filter-btn" onclick="setLinkFilter('other',this)">Other</button>
+        </div>
+        <div id="links-list"></div>
+      </div>
+      <button class="fab" onclick="openModal('modal-link')" title="Share a link">＋</button>
+    </div><!-- /links -->
+
+
+    <!-- ── MEMBERS PAGE ───────────────────────────── -->
+    <div class="page" id="page-members">
+      <div class="page-inner">
+        <div class="page-header">
+          <h2 class="page-title">👥 Members</h2>
+          <p class="page-sub">Everyone in the lab.</p>
+        </div>
+        <div id="members-list"></div>
+      </div>
+    </div><!-- /members -->
+
+
+    <!-- ── ADMIN PAGE ─────────────────────────────── -->
+    <div class="page" id="page-admin">
+      <div class="page-inner">
+        <div class="page-header">
+          <h2 class="page-title">⚙️ Admin Panel</h2>
+          <p class="page-sub">Manage members, content, and settings.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="admin-section">
+          <div class="admin-section-header">📊 Overview</div>
+          <div class="admin-section-body">
+            <div class="admin-stats-grid">
+              <div class="admin-stat-card">
+                <div class="admin-stat-num" id="admin-stat-users">–</div>
+                <div class="admin-stat-label">Members</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-num" id="admin-stat-chat">–</div>
+                <div class="admin-stat-label">Messages</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-num" id="admin-stat-ideas">–</div>
+                <div class="admin-stat-label">Ideas</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-num" id="admin-stat-links">–</div>
+                <div class="admin-stat-label">Links</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members -->
+        <div class="admin-section">
+          <div class="admin-section-header">👥 Members
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadAdminMembers()">↻ Refresh</button>
+          </div>
+          <div class="admin-section-body">
+            <div id="admin-members-list"></div>
+          </div>
+        </div>
+
+        <!-- Secret Keyword -->
+        <div class="admin-section">
+          <div class="admin-section-header">🔑 Secret Keyword</div>
+          <div class="admin-section-body">
+            <p class="text-sm text-muted" style="margin-bottom:12px">
+              New registrations require this keyword. Share it only with trusted lab members.
+            </p>
+            <div class="keyword-display">🔒 <span id="admin-keyword-display">••••••••</span></div>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('modal-keyword')">Change keyword</button>
+          </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="admin-section">
+          <div class="admin-section-header">📣 Post Announcement</div>
+          <div class="admin-section-body">
+            <button class="btn btn-primary" onclick="openModal('modal-ann')">＋ New Announcement</button>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="admin-section" style="border-color:rgba(255,92,107,0.25)">
+          <div class="admin-section-header" style="color:var(--red)">⚠️ Danger Zone</div>
+          <div class="admin-section-body">
+            <p class="text-sm text-muted" style="margin-bottom:12px">
+              These actions are irreversible. Be careful.
+            </p>
+            <button class="btn btn-danger" onclick="clearChat()">🗑 Clear all chat messages</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /admin -->
+
+  </main>
+
+  <!-- ── BOTTOM NAV (mobile) ───────────────────── -->
+  <nav class="bottom-nav" role="navigation" aria-label="Bottom navigation">
+    <div id="bottom-nav-items" style="display:contents"></div>
+  </nav>
+
+  <!-- ── TOAST ────────────────────────────────── -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+</div><!-- /app-shell -->
+
+
+<!-- ═══════════════════════════════════════════════
      MODALS
-══════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════ -->
 
-<!-- Announcement modal -->
-<div id="modal-ann" class="modal-overlay" style="display:none">
-  <div class="modal">
-    <h3>📣 New Announcement</h3>
-    <div class="form-group">
-      <label class="form-label">Title</label>
-      <input class="input" id="ann-title" placeholder="Short headline…" />
+<!-- Post Idea Modal -->
+<div class="modal-overlay" id="modal-idea" role="dialog" aria-modal="true" aria-labelledby="modal-idea-title">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="modal-idea-title">💡 Post an Idea</h3>
+    <div class="form-field">
+      <label class="form-label" for="idea-title">Title *</label>
+      <input class="form-input" id="idea-title" type="text" placeholder="What's the idea?" maxlength="120">
     </div>
-    <div class="form-group">
-      <label class="form-label">Message</label>
-      <textarea class="textarea" id="ann-body" placeholder="Write your announcement…"></textarea>
+    <div class="form-field">
+      <label class="form-label" for="idea-desc">Description</label>
+      <textarea class="form-textarea" id="idea-desc" placeholder="Tell us more about this idea…" maxlength="600"></textarea>
     </div>
-    <div class="form-group" style="display:flex;align-items:center;gap:8px">
-      <input type="checkbox" id="ann-pinned" />
-      <label for="ann-pinned" style="font-size:0.85rem">📌 Pin this announcement</label>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-ann')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAnnouncement()">Post</button>
-    </div>
-  </div>
-</div>
-
-<!-- Idea modal -->
-<div id="modal-idea" class="modal-overlay" style="display:none">
-  <div class="modal">
-    <h3>💡 New Idea</h3>
-    <div class="form-group">
-      <label class="form-label">Idea title</label>
-      <input class="input" id="idea-title" placeholder="What's your idea?" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Description</label>
-      <textarea class="textarea" id="idea-desc" placeholder="Tell us more…"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tag</label>
-      <select class="input" id="idea-tag">
-        <option value="general">💬 General</option>
-        <option value="feature">✨ Feature</option>
-        <option value="design">🎨 Design</option>
-        <option value="research">🔬 Research</option>
-        <option value="bug">🐛 Bug</option>
-        <option value="other">📦 Other</option>
+    <div class="form-field">
+      <label class="form-label" for="idea-tag">Tag</label>
+      <select class="form-select" id="idea-tag">
+        <option value="general">General</option>
+        <option value="feature">Feature</option>
+        <option value="research">Research</option>
+        <option value="design">Design</option>
+        <option value="bug">Bug</option>
+        <option value="other">Other</option>
       </select>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-idea')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitIdea()">Post Idea</button>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitIdea()">Post Idea</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-idea')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Link modal -->
-<div id="modal-link" class="modal-overlay" style="display:none">
-  <div class="modal">
-    <h3>🔗 Share a Link</h3>
-    <div class="form-group">
-      <label class="form-label">URL</label>
-      <input class="input" id="link-url" placeholder="https://…" type="url" />
+<!-- Share Link Modal -->
+<div class="modal-overlay" id="modal-link" role="dialog" aria-modal="true" aria-labelledby="modal-link-title">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="modal-link-title">🔗 Share a Link</h3>
+    <div class="form-field">
+      <label class="form-label" for="link-url">URL *</label>
+      <input class="form-input" id="link-url" type="url" placeholder="https://…">
     </div>
-    <div class="form-group">
-      <label class="form-label">Title</label>
-      <input class="input" id="link-title" placeholder="What is this?" />
+    <div class="form-field">
+      <label class="form-label" for="link-title">Title *</label>
+      <input class="form-input" id="link-title" type="text" placeholder="What is this link?" maxlength="120">
     </div>
-    <div class="form-group">
-      <label class="form-label">Description (optional)</label>
-      <input class="input" id="link-desc" placeholder="Why is it useful?" />
+    <div class="form-field">
+      <label class="form-label" for="link-desc">Note (optional)</label>
+      <textarea class="form-textarea" id="link-desc" placeholder="Why are you sharing this?" maxlength="400" style="min-height:70px"></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">Category</label>
-      <select class="input" id="link-category">
-        <option value="article">📰 Article</option>
-        <option value="tool">🛠️ Tool</option>
-        <option value="video">🎥 Video</option>
-        <option value="repo">💻 Repo</option>
-        <option value="design">🎨 Design</option>
-        <option value="other">📦 Other</option>
+    <div class="form-field">
+      <label class="form-label" for="link-category">Category</label>
+      <select class="form-select" id="link-category">
+        <option value="article">Article</option>
+        <option value="tool">Tool</option>
+        <option value="video">Video</option>
+        <option value="repo">Repository</option>
+        <option value="paper">Paper</option>
+        <option value="other">Other</option>
       </select>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-link')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitLink()">Share</button>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitLink()">Share Link</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-link')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div id="toast" class="toast"></div>
+<!-- Post Announcement Modal -->
+<div class="modal-overlay" id="modal-ann" role="dialog" aria-modal="true" aria-labelledby="modal-ann-title">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="modal-ann-title">📣 New Announcement</h3>
+    <div class="form-field">
+      <label class="form-label" for="ann-title">Title *</label>
+      <input class="form-input" id="ann-title" type="text" placeholder="Announcement title" maxlength="120">
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="ann-body">Message *</label>
+      <textarea class="form-textarea" id="ann-body" placeholder="What do you want to announce?" maxlength="800"></textarea>
+    </div>
+    <div class="form-field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="ann-pinned">
+        📌 Pin this announcement
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitAnnouncement()">Post</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-ann')">Cancel</button>
+    </div>
+  </div>
+</div>
 
-<!-- ══════════════════════════════════════════════════════
+<!-- Change Keyword Modal -->
+<div class="modal-overlay" id="modal-keyword" role="dialog" aria-modal="true" aria-labelledby="modal-keyword-title">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title" id="modal-keyword-title">🔑 Change Secret Keyword</h3>
+    <p class="text-sm text-muted" style="margin-bottom:16px">
+      After changing, new registrations will require the new keyword. Existing members are unaffected.
+    </p>
+    <div class="form-field">
+      <label class="form-label" for="admin-new-keyword">New Keyword</label>
+      <input class="form-input" id="admin-new-keyword" type="text"
+        placeholder="At least 4 characters" minlength="4" maxlength="40">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewKeyword()">Save Keyword</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-keyword')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
      SCRIPTS
-══════════════════════════════════════════════════════ -->
-<!-- Firebase v9 compat (works with the API style above) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-<!-- Your config + app -->
+═══════════════════════════════════════════════ -->
 <script src="js/firebase-config.js"></script>
-<script>
-  // Set group name from config
-  document.getElementById('group-name').textContent = GROUP_CONFIG.name;
-  document.getElementById('hero-title').innerHTML =
-    GROUP_CONFIG.name + "'s space to <em>create</em>, share &amp; connect.";
-  document.getElementById('hero-sub').textContent = GROUP_CONFIG.tagline;
-  document.getElementById('member-count').textContent =
-    GROUP_CONFIG.members.length + ' members';
-  document.title = GROUP_CONFIG.name;
-</script>
 <script src="js/app.js"></script>
+<script>
+  // Wire up hero username after app shows
+  const _origShowApp = showApp;
+  window.showApp = function() {
+    _origShowApp();
+    const el = document.getElementById('hero-username');
+    if (el && currentUser) el.textContent = currentUser.name;
+    // Show ann FAB only for admins
+    const fab = document.getElementById('ann-fab');
+    if (fab) fab.style.display = currentUser?.role === 'Admin' ? 'flex' : 'none';
+  };
+</script>
 
 </body>
 </html>
