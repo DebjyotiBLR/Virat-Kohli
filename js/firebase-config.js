@@ -1,3 +1,6 @@
+// ============================================================
+//  YOUR FIREBASE CONFIG — already filled in for ABDevillors
+// ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyDzecOtJM9gy7xU_KoAEQ59uib2ubM4tE4",
   authDomain: "abdevillors.firebaseapp.com",
@@ -9,22 +12,22 @@ const firebaseConfig = {
   measurementId: "G-2NL6G5RRS5"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // ============================================================
-//  STEP 2: Set your group name & members here
+//  GROUP SETTINGS — customize these
 // ============================================================
 const GROUP_CONFIG = {
-  name: "Our Crew",
+  name: "ABDevillors",
   tagline: "Ideas, links, and conversations — all in one place.",
-  accentColor: "#FF6B6B",
+  secretKeyword: "ABDev2025",   // Share ONLY with lab members — admin can change via panel
+  adminUser: "Debjyoti",        // This username gets the Admin Panel
   members: [
-    { name: "Alice",   role: "Admin",    avatar: "🦊", bio: "Loves design & coffee.",    color: "#FF6B6B" },
-    { name: "Bob",     role: "Member",   avatar: "🐻", bio: "Backend wizard.",            color: "#4ECDC4" },
-    { name: "Charlie", role: "Member",   avatar: "🐯", bio: "Always has wild ideas.",     color: "#FFE66D" },
-    { name: "Diana",   role: "Member",   avatar: "🦋", bio: "Frontend & vibes.",          color: "#A8E6CF" },
-    { name: "Ethan",   role: "Member",   avatar: "🦉", bio: "Data nerd & night owl.",     color: "#C7CEEA" }
+    { name: "Debjyoti", role: "Admin",  avatar: "🦁", bio: "Founder & lab admin.",    color: "#FF6B6B" },
+    { name: "Alice",    role: "Member", avatar: "🦊", bio: "Loves design & coffee.", color: "#4ECDC4" },
+    { name: "Bob",      role: "Member", avatar: "🐻", bio: "Backend wizard.",         color: "#FFE66D" },
+    { name: "Charlie",  role: "Member", avatar: "🐯", bio: "Always has wild ideas.",  color: "#A8E6CF" },
+    { name: "Diana",    role: "Member", avatar: "🦋", bio: "Frontend & vibes.",       color: "#C7CEEA" }
   ]
 };
