@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Crew</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     NAV
+══════════════════════════════════════════════════════ -->
+<nav>
+  <a class="nav-logo" href="#" onclick="navigateTo('home'); return false;">
+    ✦ <span id="group-name">Our Crew</span>
+  </a>
+  <ul class="nav-links"></ul>
+  <div class="nav-user">
+    <select id="user-select" class="input" style="width:auto;border-radius:999px;padding:6px 14px;font-size:0.82rem;"></select>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     HOME
+══════════════════════════════════════════════════════ -->
+<div id="page-home" class="page">
+  <div class="hero">
+    <span class="hero-eyebrow">✦ Welcome</span>
+    <h1 id="hero-title">Our space to <em>create</em>, share &amp; connect.</h1>
+    <p class="hero-sub" id="hero-sub">Ideas, links, and conversations — all in one place.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num" id="stat-chat">—</div>
+        <div class="label">messages</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num" id="stat-ideas">—</div>
+        <div class="label">ideas</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num" id="stat-links">—</div>
+        <div class="label">links shared</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="home-grid">
+      <div>
+        <div class="section-head">
+          <h2>📣 Latest announcements</h2>
+          <a class="see-all" onclick="navigateTo('announcements')">See all →</a>
+        </div>
+        <div id="home-announcements"></div>
+      </div>
+      <div>
+        <div class="section-head"><h2>⚡ Activity</h2></div>
+        <div class="card" style="padding:0.75rem 1rem">
+          <div id="activity-feed"><p class="text-muted text-sm">Loading...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ANNOUNCEMENTS
+══════════════════════════════════════════════════════ -->
+<div id="page-announcements" class="page">
+  <div class="container">
+    <div class="section-head" style="margin-top:1rem">
+      <h2>📣 Announcements</h2>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-ann')">+ Post</button>
+    </div>
+    <div id="announcements-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     CHAT
+══════════════════════════════════════════════════════ -->
+<div id="page-chat" class="page">
+  <div class="chat-layout">
+    <div class="chat-messages" id="chat-messages">
+      <div class="empty">
+        <div class="empty-icon">💬</div>
+        <p>Loading messages...</p>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="input" id="chat-input" placeholder="Type a message… (Enter to send)" autocomplete="off" />
+      <button class="btn btn-primary" onclick="sendMessage()">Send ↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     IDEAS
+══════════════════════════════════════════════════════ -->
+<div id="page-ideas" class="page">
+  <div class="container">
+    <div class="section-head" style="margin-top:1rem">
+      <h2>💡 Idea Board</h2>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-idea')">+ Add Idea</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <select class="input" id="idea-filter" style="width:auto;border-radius:999px;font-size:0.82rem" onchange="loadIdeas()">
+        <option value="all">All tags</option>
+        <option value="feature">✨ Feature</option>
+        <option value="design">🎨 Design</option>
+        <option value="research">🔬 Research</option>
+        <option value="bug">🐛 Bug</option>
+        <option value="general">💬 General</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div id="ideas-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     LINKS
+══════════════════════════════════════════════════════ -->
+<div id="page-links" class="page">
+  <div class="container">
+    <div class="section-head" style="margin-top:1rem">
+      <h2>🔗 Links Library</h2>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-link')">+ Share Link</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+      <select class="input" id="link-cat-filter" style="width:auto;border-radius:999px;font-size:0.82rem" onchange="loadLinks()">
+        <option value="all">All categories</option>
+        <option value="article">📰 Article</option>
+        <option value="tool">🛠️ Tool</option>
+        <option value="video">🎥 Video</option>
+        <option value="repo">💻 Repo</option>
+        <option value="design">🎨 Design</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div id="links-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MEMBERS
+══════════════════════════════════════════════════════ -->
+<div id="page-members" class="page">
+  <div class="container">
+    <div class="section-head" style="margin-top:1rem">
+      <h2>👥 Members</h2>
+      <span class="tag" id="member-count"></span>
+    </div>
+    <div id="members-list"></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════ -->
+
+<!-- Announcement modal -->
+<div id="modal-ann" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>📣 New Announcement</h3>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input class="input" id="ann-title" placeholder="Short headline…" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="textarea" id="ann-body" placeholder="Write your announcement…"></textarea>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="ann-pinned" />
+      <label for="ann-pinned" style="font-size:0.85rem">📌 Pin this announcement</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-ann')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAnnouncement()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Idea modal -->
+<div id="modal-idea" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>💡 New Idea</h3>
+    <div class="form-group">
+      <label class="form-label">Idea title</label>
+      <input class="input" id="idea-title" placeholder="What's your idea?" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="textarea" id="idea-desc" placeholder="Tell us more…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tag</label>
+      <select class="input" id="idea-tag">
+        <option value="general">💬 General</option>
+        <option value="feature">✨ Feature</option>
+        <option value="design">🎨 Design</option>
+        <option value="research">🔬 Research</option>
+        <option value="bug">🐛 Bug</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-idea')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitIdea()">Post Idea</button>
+    </div>
+  </div>
+</div>
+
+<!-- Link modal -->
+<div id="modal-link" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>🔗 Share a Link</h3>
+    <div class="form-group">
+      <label class="form-label">URL</label>
+      <input class="input" id="link-url" placeholder="https://…" type="url" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input class="input" id="link-title" placeholder="What is this?" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description (optional)</label>
+      <input class="input" id="link-desc" placeholder="Why is it useful?" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="input" id="link-category">
+        <option value="article">📰 Article</option>
+        <option value="tool">🛠️ Tool</option>
+        <option value="video">🎥 Video</option>
+        <option value="repo">💻 Repo</option>
+        <option value="design">🎨 Design</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-link')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitLink()">Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════ -->
+<!-- Firebase v9 compat (works with the API style above) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- Your config + app -->
+<script src="js/firebase-config.js"></script>
+<script>
+  // Set group name from config
+  document.getElementById('group-name').textContent = GROUP_CONFIG.name;
+  document.getElementById('hero-title').innerHTML =
+    GROUP_CONFIG.name + "'s space to <em>create</em>, share &amp; connect.";
+  document.getElementById('hero-sub').textContent = GROUP_CONFIG.tagline;
+  document.getElementById('member-count').textContent =
+    GROUP_CONFIG.members.length + ' members';
+  document.title = GROUP_CONFIG.name;
+</script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
